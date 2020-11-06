@@ -23,6 +23,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.maps.model.SquareCap;
+import com.google.maps.android.heatmaps.Gradient;
+import com.google.maps.android.heatmaps.WeightedLatLng;
 import io.flutter.view.FlutterMain;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,19 +46,16 @@ class Convert {
         }
       case "fromAsset":
         if (data.size() == 2) {
-          return BitmapDescriptorFactory.fromAsset(
-              FlutterMain.getLookupKeyForAsset(toString(data.get(1))));
+          return BitmapDescriptorFactory.fromAsset(FlutterMain.getLookupKeyForAsset(toString(data.get(1))));
         } else {
-          return BitmapDescriptorFactory.fromAsset(
-              FlutterMain.getLookupKeyForAsset(toString(data.get(1)), toString(data.get(2))));
+          return BitmapDescriptorFactory
+              .fromAsset(FlutterMain.getLookupKeyForAsset(toString(data.get(1)), toString(data.get(2))));
         }
       case "fromAssetImage":
         if (data.size() == 3) {
-          return BitmapDescriptorFactory.fromAsset(
-              FlutterMain.getLookupKeyForAsset(toString(data.get(1))));
+          return BitmapDescriptorFactory.fromAsset(FlutterMain.getLookupKeyForAsset(toString(data.get(1))));
         } else {
-          throw new IllegalArgumentException(
-              "'fromAssetImage' Expected exactly 3 arguments, got: " + data.size());
+          throw new IllegalArgumentException("'fromAssetImage' Expected exactly 3 arguments, got: " + data.size());
         }
       case "fromBytes":
         return getBitmapFromBytes(data);
@@ -74,8 +73,7 @@ class Convert {
         throw new IllegalArgumentException("Unable to interpret bytes as a valid image.", e);
       }
     } else {
-      throw new IllegalArgumentException(
-          "fromBytes should have exactly one argument, the bytes. Got: " + data.size());
+      throw new IllegalArgumentException("fromBytes should have exactly one argument, the bytes. Got: " + data.size());
     }
   }
 
@@ -101,8 +99,7 @@ class Convert {
       case "newLatLng":
         return CameraUpdateFactory.newLatLng(toLatLng(data.get(1)));
       case "newLatLngBounds":
-        return CameraUpdateFactory.newLatLngBounds(
-            toLatLngBounds(data.get(1)), toPixels(data.get(2), density));
+        return CameraUpdateFactory.newLatLngBounds(toLatLngBounds(data.get(1)), toPixels(data.get(2), density));
       case "newLatLngZoom":
         return CameraUpdateFactory.newLatLngZoom(toLatLng(data.get(1)), toFloat(data.get(2)));
       case "scrollBy":
@@ -194,6 +191,15 @@ class Convert {
     }
     final Map<String, Object> data = new HashMap<>(1);
     data.put("circleId", circleId);
+    return data;
+  }
+
+  static Object heatmapIdToJson(String heatmapId) {
+    if (heatmapId == null) {
+      return null;
+    }
+    final Map<String, Object> data = new HashMap<>(1);
+    data.put("heatmapId", heatmapId);
     return data;
   }
 
@@ -290,10 +296,7 @@ class Convert {
     final Object padding = data.get("padding");
     if (padding != null) {
       final List<?> paddingData = toList(padding);
-      sink.setPadding(
-          toFloat(paddingData.get(0)),
-          toFloat(paddingData.get(1)),
-          toFloat(paddingData.get(2)),
+      sink.setPadding(toFloat(paddingData.get(0)), toFloat(paddingData.get(1)), toFloat(paddingData.get(2)),
           toFloat(paddingData.get(3)));
     }
     final Object rotateGesturesEnabled = data.get("rotateGesturesEnabled");
@@ -403,8 +406,7 @@ class Convert {
     }
   }
 
-  private static void interpretInfoWindowOptions(
-      MarkerOptionsSink sink, Map<String, Object> infoWindow) {
+  private static void interpretInfoWindowOptions(MarkerOptionsSink sink, Map<String, Object> infoWindow) {
     String title = (String) infoWindow.get("title");
     String snippet = (String) infoWindow.get("snippet");
     // snippet is nullable.
@@ -554,6 +556,91 @@ class Convert {
     } else {
       return circleId;
     }
+  }
+
+  static String interpretHeatmapOptions(Object o, HeatmapOptionsSink sink) {
+    final Map<?, ?> data = toMap(o);
+    final Object points = data.get("points");
+    if (points != null) {
+      sink.setPoints(toWeightedPoints(points));
+    }
+    final Object gradient = data.get("gradient");
+    if (gradient != null) {
+      sink.setGradient(toGradient(gradient));
+    }
+    final Object opacity = data.get("opacity");
+    if (opacity != null) {
+      sink.setOpacity(toDouble(opacity));
+    }
+    final Object radius = data.get("radius");
+    if (radius != null) {
+      sink.setRadius(toInt(radius));
+    }
+    final Object fadeIn = data.get("fadeIn");
+    if (fadeIn != null) {
+      sink.setFadeIn(toBoolean(fadeIn));
+    }
+    final Object transparency = data.get("transparency");
+    if (transparency != null) {
+      sink.setTransparency(toFloat(transparency));
+    }
+    final Object visible = data.get("visible");
+    if (visible != null) {
+      sink.setVisible(toBoolean(visible));
+    }
+    final Object zIndex = data.get("zIndex");
+    if (zIndex != null) {
+      sink.setZIndex(toFloat(zIndex));
+    }
+    final String heatmapId = (String) data.get("heatmapId");
+    if (heatmapId == null) {
+      throw new IllegalArgumentException("heatmapId was null");
+    } else {
+      return heatmapId;
+    }
+  }
+
+  private static List<WeightedLatLng> toWeightedPoints(Object o) {
+    final List<?> data = toList(o);
+    final List<WeightedLatLng> points = new ArrayList<>(data.size());
+
+    for (Object ob : data) {
+      final List<?> weightedPoint = toList(ob);
+      final List<?> point = toList(weightedPoint.get(0));
+      points.add(
+          new WeightedLatLng(new LatLng(toFloat(point.get(0)), toFloat(point.get(1))), toInt(weightedPoint.get(1))));
+    }
+    return points;
+  }
+
+  private static Gradient toGradient(Object o) {
+    final List<?> data = toList(o);
+    int[] colors = toIntArray(data.get(0));
+    float[] startPoints = toFloatArray(data.get(1));
+    int colorMapSize = toInt(data.get(2));
+    return new Gradient(colors, startPoints, colorMapSize);
+  }
+
+  private static int[] toIntArray(Object o) {
+    final List<?> data = toList(o);
+    final int[] ints = new int[data.size()];
+
+    int index = 0;
+    for (Object ob : data) {
+      ints[index++] = toInt(ob);
+    }
+    return ints;
+  }
+
+  private static float[] toFloatArray(Object o) {
+    final List<?> data = toList(o);
+    final float[] floats = new float[data.size()];
+
+    int index = 0;
+    for (Object ob : data) {
+      floats[index++] = toFloat(ob);
+    }
+    return floats;
   }
 
   private static List<LatLng> toPoints(Object o) {

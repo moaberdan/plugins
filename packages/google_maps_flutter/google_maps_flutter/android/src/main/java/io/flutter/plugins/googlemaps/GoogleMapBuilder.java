@@ -23,15 +23,13 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   private Object initialPolygons;
   private Object initialPolylines;
   private Object initialCircles;
+  private Object initialHeatmaps;
   private Rect padding = new Rect(0, 0, 0, 0);
 
-  GoogleMapController build(
-      int id,
-      Context context,
-      BinaryMessenger binaryMessenger,
+  GoogleMapController build(int id, Context context, BinaryMessenger binaryMessenger,
       LifecycleProvider lifecycleProvider) {
-    final GoogleMapController controller =
-        new GoogleMapController(id, context, binaryMessenger, lifecycleProvider, options);
+    final GoogleMapController controller = new GoogleMapController(id, context, binaryMessenger, lifecycleProvider,
+        options);
     controller.init();
     controller.setMyLocationEnabled(myLocationEnabled);
     controller.setMyLocationButtonEnabled(myLocationButtonEnabled);
@@ -43,6 +41,7 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
     controller.setInitialPolygons(initialPolygons);
     controller.setInitialPolylines(initialPolylines);
     controller.setInitialCircles(initialCircles);
+    controller.setInitialHeatmaps(initialHeatmaps);
     controller.setPadding(padding.top, padding.left, padding.bottom, padding.right);
     return controller;
   }
@@ -164,5 +163,10 @@ class GoogleMapBuilder implements GoogleMapOptionsSink {
   @Override
   public void setInitialCircles(Object initialCircles) {
     this.initialCircles = initialCircles;
+  }
+
+  @Override
+  public void setInitialHeatmaps(Object initialHeatmaps) {
+    this.initialHeatmaps = initialHeatmaps;
   }
 }

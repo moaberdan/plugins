@@ -49,6 +49,7 @@ class GoogleMap extends StatefulWidget {
     this.polygons,
     this.polylines,
     this.circles,
+    this.heatmaps,
     this.onCameraMoveStarted,
     this.onCameraMove,
     this.onCameraIdle,
@@ -119,6 +120,9 @@ class GoogleMap extends StatefulWidget {
 
   /// Circles to be placed on the map.
   final Set<Circle> circles;
+
+  /// Heatmaps to be placed on the map.
+  final Set<Heatmap> heatmaps;
 
   /// Called when the camera starts moving.
   ///
@@ -220,6 +224,7 @@ class _GoogleMapState extends State<GoogleMap> {
   Map<PolygonId, Polygon> _polygons = <PolygonId, Polygon>{};
   Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
   Map<CircleId, Circle> _circles = <CircleId, Circle>{};
+  Map<HeatmapId, Heatmap> _heatmaps = <HeatmapId, Heatmap>{};
   _GoogleMapOptions _googleMapOptions;
 
   @override
@@ -231,6 +236,7 @@ class _GoogleMapState extends State<GoogleMap> {
       'polygonsToAdd': serializePolygonSet(widget.polygons),
       'polylinesToAdd': serializePolylineSet(widget.polylines),
       'circlesToAdd': serializeCircleSet(widget.circles),
+      'heatmapsToAdd': serializeHeatmapSet(widget.heatmaps),
       '_webOnlyMapCreationId': _webOnlyMapCreationId,
     };
 
@@ -249,6 +255,7 @@ class _GoogleMapState extends State<GoogleMap> {
     _polygons = keyByPolygonId(widget.polygons);
     _polylines = keyByPolylineId(widget.polylines);
     _circles = keyByCircleId(widget.circles);
+    _heatmaps = keyByHeatmapId(widget.heatmaps);
   }
 
   @override
@@ -266,6 +273,7 @@ class _GoogleMapState extends State<GoogleMap> {
     _updatePolygons();
     _updatePolylines();
     _updateCircles();
+    _updateHeatmaps();
   }
 
   void _updateOptions() async {
@@ -311,6 +319,14 @@ class _GoogleMapState extends State<GoogleMap> {
     controller._updateCircles(
         CircleUpdates.from(_circles.values.toSet(), widget.circles));
     _circles = keyByCircleId(widget.circles);
+  }
+
+  void _updateHeatmaps() async {
+    final GoogleMapController controller = await _controller.future;
+    // ignore: unawaited_futures
+    controller._updateHeatmaps(
+        HeatmapUpdates.from(_heatmaps.values.toSet(), widget.heatmaps));
+    _heatmaps = keyByHeatmapId(widget.heatmaps);
   }
 
   Future<void> onPlatformViewCreated(int id) async {
