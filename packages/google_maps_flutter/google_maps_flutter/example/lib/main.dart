@@ -5,7 +5,6 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter_example/lite_mode.dart';
 import 'animate_camera.dart';
 import 'map_click.dart';
 import 'map_coordinates.dart';
@@ -20,6 +19,7 @@ import 'place_polygon.dart';
 import 'place_polyline.dart';
 import 'scrolling_map.dart';
 import 'snapshot.dart';
+import 'place_heatmap.dart';
 
 final List<GoogleMapExampleAppPage> _allPages = <GoogleMapExampleAppPage>[
   MapUiPage(),
@@ -33,9 +33,10 @@ final List<GoogleMapExampleAppPage> _allPages = <GoogleMapExampleAppPage>[
   PlacePolylinePage(),
   PlacePolygonPage(),
   PlaceCirclePage(),
+  PlaceHeatmapPage(),
   PaddingPage(),
   SnapshotPage(),
-  LiteModePage(),
+  // LiteModePage(),
 ];
 
 class MapsDemo extends StatelessWidget {
